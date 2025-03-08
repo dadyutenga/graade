@@ -6,12 +6,13 @@ class Home extends BaseController
 {
     public function index()
     {
-        // Pass authentication status to the view
-        $data = [
-            'isLoggedIn' => auth()->loggedIn(),
-            'user' => auth()->loggedIn() ? auth()->user() : null
-        ];
+        // If user is logged in, redirect to dashboard
+        if (auth()->loggedIn()) {
+            return redirect()->to('/dashboard');
+        }
         
-        return view('welcome_message', $data);
+        return view('welcome_message', [
+            'title' => 'Welcome to My Application'
+        ]);
     }
 }

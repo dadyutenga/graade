@@ -53,6 +53,12 @@ class StudentResultsController extends ResourceController
             return redirect()->to('/login');
         }
         
+        // Check if student_id is provided in GET request
+        $studentId = $this->request->getGet('student_id');
+        if ($studentId) {
+            return redirect()->to("/student-results/{$studentId}");
+        }
+        
         // This method could display a form to search for a student
         return view('student_results/index', [
             'user' => auth()->user()
