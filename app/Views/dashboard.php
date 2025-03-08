@@ -135,61 +135,7 @@
         <div class="row mt-4">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h4 class="mb-0">Tanzania Grading System</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Marks Range</th>
-                                        <th>Grade</th>
-                                        <th>Description</th>
-                                        <th>Points</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>80-100</td>
-                                        <td>A</td>
-                                        <td>Excellent</td>
-                                        <td>5</td>
-                                    </tr>
-                                    <tr>
-                                        <td>70-79</td>
-                                        <td>B+</td>
-                                        <td>Very Good</td>
-                                        <td>4</td>
-                                    </tr>
-                                    <tr>
-                                        <td>60-69</td>
-                                        <td>B</td>
-                                        <td>Good</td>
-                                        <td>3</td>
-                                    </tr>
-                                    <tr>
-                                        <td>50-59</td>
-                                        <td>C</td>
-                                        <td>Average</td>
-                                        <td>2</td>
-                                    </tr>
-                                    <tr>
-                                        <td>40-49</td>
-                                        <td>D</td>
-                                        <td>Satisfactory</td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>0-39</td>
-                                        <td>F</td>
-                                        <td>Fail</td>
-                                        <td>0</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                   
                 </div>
             </div>
         </div>
