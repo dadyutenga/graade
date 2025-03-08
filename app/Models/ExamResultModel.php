@@ -6,8 +6,14 @@ use CodeIgniter\Model;
 
 class ExamResultModel extends Model
 {
-    protected $table = 'exam_group_exam_results';
-    protected $primaryKey = 'id';
+    protected $DBGroup          = 'second_db';
+    protected $table            = 'exam_group_exam_results';
+    protected $primaryKey       = 'id';
+    protected $useAutoIncrement = true;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = false;
+    protected $protectFields    = true;
+    protected $allowedFields    = ['exam_group_class_batch_exam_subject_id', 'exam_group_class_batch_exam_student_id', 'get_marks', 'note'];
 
     public function getStudentExamResults($studentId)
     {
@@ -22,5 +28,10 @@ class ExamResultModel extends Model
             })
             ->get()
             ->getResultArray();
+    }
+    
+    public function getExamResultsForStudent($studentId)
+    {
+        return $this->getStudentExamResults($studentId);
     }
 }
