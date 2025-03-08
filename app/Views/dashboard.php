@@ -3,14 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard - Student Management System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #212529; /* Black matte */
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: #212529; /* Black matte */
+            color: white;
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+        }
+        .btn-primary, .btn-success, .btn-info {
+            background: #212529; /* Black matte */
+            border: none;
+        }
+        .btn-primary:hover, .btn-success:hover, .btn-info:hover {
+            background: #343a40; /* Slightly lighter black */
+        }
+        .btn-outline-success, .btn-outline-info, .btn-outline-secondary {
+            color: #212529;
+            border-color: #212529;
+        }
+        .btn-outline-success:hover, .btn-outline-info:hover, .btn-outline-secondary:hover {
+            background-color: #212529;
+            color: white;
+        }
+        .text-primary, .text-success, .text-info {
+            color: #212529 !important;
+        }
+        footer {
+            background: #212529;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="<?= base_url() ?>">My App</a>
+            <a class="navbar-brand" href="<?= base_url() ?>">Student Management System</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -53,7 +97,7 @@
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <i class="bi bi-person-circle fs-1 text-primary mb-3"></i>
+                        <i class="bi bi-person-circle fs-1 mb-3"></i>
                         <h4 class="card-title">Your Profile</h4>
                         <p class="card-text">Email: <?= auth()->user()->email ?></p>
                         <p class="card-text">
@@ -68,7 +112,7 @@
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <i class="bi bi-award fs-1 text-success mb-3"></i>
+                        <i class="bi bi-award fs-1 mb-3"></i>
                         <h4 class="card-title">Grades</h4>
                         <p class="card-text">View and manage Tanzania grading system</p>
                         <a href="<?= url_to('grades') ?>" class="btn btn-success">Go to Grades</a>
@@ -79,7 +123,7 @@
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <i class="bi bi-mortarboard-fill fs-1 text-info mb-3"></i>
+                        <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
                         <h4 class="card-title">Student Results</h4>
                         <p class="card-text">View and manage student exam results</p>
                         <a href="<?= url_to('student.results') ?>" class="btn btn-info">View Results</a>
@@ -92,7 +136,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Tanzania Grading System</h4>
+                        <h4 class="mb-0">Tanzania Grading System</h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -154,7 +198,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Quick Actions</h4>
+                        <h4 class="mb-0">Quick Actions</h4>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -180,9 +224,9 @@
         </div>
     </div>
 
-    <footer class="bg-light py-4 mt-5">
+    <footer class="py-4 mt-5">
         <div class="container text-center">
-            <p class="mb-0">© <?= date('Y') ?> My Application. All rights reserved.</p>
+            <p class="mb-0">© <?= date('Y') ?> Student Management System. All rights reserved.</p>
         </div>
     </footer>
 
