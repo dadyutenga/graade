@@ -1,0 +1,375 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class GradingSystem extends CI_Controller {
+    
+    public function __construct() {
+        parent::__construct();
+        // Load necessary models
+        $this->load->model('Student_model');
+        $this->load->model('Subject_model');
+        $this->load->model('Result_model');
+    }
+    
+    /**
+     * Calculate O Level (Form 2 and Form 4) grade for a specific student
+     * 
+     * @param int $student_id The ID of the student
+     * @param int $form_level The form level (2 or 4)
+     * @return array The grading result
+     */
+    public function calculateOLevelGrade($student_id, $form_level) {
+        // Get student subjects and marks
+        $subjects = $this->Result_model->getStudentSubjects($student_id, $form_level);
+        
+        if (empty($subjects)) {
+            return [
+                'status' => false,
+                'message' => 'No subjects found for this student'
+            ];
+        }
+        
+        // Calculate points for each subject based on letter grades only
+        $graded_subjects = [];
+        foreach ($subjects as $subject) {
+            $marks = $subject['marks'];
+            $grade = $this->getOLevelGrade($marks);
+            $graded_subjects[] = [
+                'subject_id' => $subject['subject_id'],
+                'subject_name' => $subject['subject_name'],
+                'marks' => $marks,
+                'grade' => $grade['grade'],
+                'points' => $grade['points'],
+                'remarks' => $grade['remarks']
+            ];
+        }
+        
+        // Sort by points (best performing subjects first)
+        usort($graded_subjects, function($a, $b) {
+            return $a['points'] - $b['points']; // Points are in ascending order (1 is best)
+        });
+        
+        // First, prioritize passing grades (grades that are not F)
+        $passing_subjects = array_filter($graded_subjects, function($subject) {
+            return $subject['grade'] != 'F';
+        });
+        
+        // If we have 7 or more passing subjects, take the best 7
+        if (count($passing_subjects) >= 7) {
+            $best_subjects = array_slice($passing_subjects, 0, 7);
+        } 
+        // If we have less than 7 passing subjects, include F grades to make up the total
+        else {
+            $best_subjects = $passing_subjects; // First, include all passing subjects
+            
+            // Then fill the remaining slots with F grades
+            $failing_subjects = array_filter($graded_subjects, function($subject) {
+                return $subject['grade'] == 'F';
+            });
+            
+            // Add failing subjects until we have 7 total or run out of subjects
+            $remaining_slots = 7 - count($best_subjects);
+            $failing_subjects_to_add = array_slice($failing_subjects, 0, $remaining_slots);
+            $best_subjects = array_merge($best_subjects, $failing_subjects_to_add);
+        }
+        
+        // Calculate total points from selected subjects (up to 7)
+        $total_points = 0;
+        foreach ($best_subjects as $subject) {
+            $total_points += $subject['points'];
+        }
+        
+        // Determine division based on total points
+        $division = $this->getOLevelDivision($total_points);
+        
+        return [
+            'status' => true,
+            'student_id' => $student_id,
+            'form_level' => $form_level,
+            'all_subjects' => $graded_subjects,
+            'best_subjects' => $best_subjects,
+            'total_points' => $total_points,
+            'division' => $division['division'],
+            'description' => $division['description']
+        ];
+    }
+    
+    /**
+     * Calculate A Level (Form 6) grade for a specific student
+     * 
+     * @param int $student_id The ID of the student
+     * @return array The grading result
+     */
+    public function calculateALevelGrade($student_id) {
+        // Get student subjects and marks
+        $subjects = $this->Result_model->getStudentSubjects($student_id, 6); // Form 6
+        
+        if (empty($subjects)) {
+            return [
+                'status' => false,
+                'message' => 'No subjects found for this student'
+            ];
+        }
+        
+        // Calculate points for each subject based on letter grades only
+        $graded_subjects = [];
+        foreach ($subjects as $subject) {
+            $marks = $subject['marks'];
+            $grade = $this->getALevelGrade($marks);
+            $graded_subjects[] = [
+                'subject_id' => $subject['subject_id'],
+                'subject_name' => $subject['subject_name'],
+                'marks' => $marks,
+                'grade' => $grade['grade'],
+                'points' => $grade['points'],
+                'remarks' => $grade['remarks']
+            ];
+        }
+        
+        // Sort by points (best performing subjects first)
+        usort($graded_subjects, function($a, $b) {
+            return $a['points'] - $b['points']; // Points are in ascending order (1 is best)
+        });
+        
+        // Select best 3 principal subjects
+        $main_subjects = array_slice($graded_subjects, 0, 3);
+        
+        // Calculate total points from main subjects
+        $total_points = 0;
+        foreach ($main_subjects as $subject) {
+            $total_points += $subject['points'];
+        }
+        
+        // Determine division based on total points
+        $division = $this->getALevelDivision($total_points);
+        
+        return [
+            'status' => true,
+            'student_id' => $student_id,
+            'form_level' => 6,
+            'all_subjects' => $graded_subjects,
+            'main_subjects' => $main_subjects,
+            'total_points' => $total_points,
+            'division' => $division['division'],
+            'description' => $division['description']
+        ];
+    }
+    
+    /**
+     * Get grade for O Level (Form 2 and Form 4) based on marks
+     * 
+     * @param float $marks The student's marks
+     * @return array Grade information including grade, points, and remarks
+     */
+    private function getOLevelGrade($marks) {
+        if ($marks >= 75 && $marks <= 100) {
+            return ['grade' => 'A', 'points' => 1, 'remarks' => 'Excellent'];
+        } elseif ($marks >= 65 && $marks < 75) {
+            return ['grade' => 'B', 'points' => 2, 'remarks' => 'Very Good'];
+        } elseif ($marks >= 45 && $marks < 65) {
+            return ['grade' => 'C', 'points' => 3, 'remarks' => 'Good'];
+        } elseif ($marks >= 30 && $marks < 45) {
+            return ['grade' => 'D', 'points' => 4, 'remarks' => 'Satisfactory'];
+        } else {
+            return ['grade' => 'F', 'points' => 5, 'remarks' => 'Fail'];
+        }
+    }
+    
+    /**
+     * Get grade for A Level (Form 6) based on marks
+     * 
+     * @param float $marks The student's marks
+     * @return array Grade information including grade, points, and remarks
+     */
+    private function getALevelGrade($marks) {
+        if ($marks >= 80 && $marks <= 100) {
+            return ['grade' => 'A', 'points' => 1, 'remarks' => 'Excellent'];
+        } elseif ($marks >= 70 && $marks < 80) {
+            return ['grade' => 'B', 'points' => 2, 'remarks' => 'Very Good'];
+        } elseif ($marks >= 60 && $marks < 70) {
+            return ['grade' => 'C', 'points' => 3, 'remarks' => 'Good'];
+        } elseif ($marks >= 50 && $marks < 60) {
+            return ['grade' => 'D', 'points' => 4, 'remarks' => 'Average'];
+        } elseif ($marks >= 40 && $marks < 50) {
+            return ['grade' => 'E', 'points' => 5, 'remarks' => 'Satisfactory'];
+        } elseif ($marks >= 35 && $marks < 40) {
+            return ['grade' => 'S', 'points' => 6, 'remarks' => 'Subsidiary'];
+        } else {
+            return ['grade' => 'F', 'points' => 7, 'remarks' => 'Fail'];
+        }
+    }
+    
+    /**
+     * Get division for O Level (Form 2 and Form 4) based on total points
+     * 
+     * @param int $total_points The total points
+     * @return array Division information including division and description
+     */
+    private function getOLevelDivision($total_points) {
+        if ($total_points >= 7 && $total_points <= 17) {
+            return ['division' => 'I', 'description' => 'Excellent'];
+        } elseif ($total_points >= 18 && $total_points <= 21) {
+            return ['division' => 'II', 'description' => 'Very Good'];
+        } elseif ($total_points >= 22 && $total_points <= 25) {
+            return ['division' => 'III', 'description' => 'Good'];
+        } elseif ($total_points >= 26 && $total_points <= 33) {
+            return ['division' => 'IV', 'description' => 'Satisfactory'];
+        } else {
+            return ['division' => 'O', 'description' => 'Fail'];
+        }
+    }
+    
+    /**
+     * Get division for A Level (Form 6) based on total points
+     * 
+     * @param int $total_points The total points
+     * @return array Division information including division and description
+     */
+    private function getALevelDivision($total_points) {
+        if ($total_points >= 3 && $total_points <= 9) {
+            return ['division' => 'I', 'description' => 'Excellent'];
+        } elseif ($total_points >= 10 && $total_points <= 12) {
+            return ['division' => 'II', 'description' => 'Very Good'];
+        } elseif ($total_points >= 13 && $total_points <= 17) {
+            return ['division' => 'III', 'description' => 'Good'];
+        } elseif ($total_points >= 18 && $total_points <= 19) {
+            return ['division' => 'IV', 'description' => 'Satisfactory'];
+        } else {
+            return ['division' => 'O', 'description' => 'Fail'];
+        }
+    }
+    
+    /**
+     * API endpoint to calculate grades and division for a student
+     * 
+     * @return JSON response
+     */
+    public function calculateStudentGrades() {
+        // Get input parameters from POST or GET
+        $student_id = $this->input->post_get('student_id');
+        $form_level = $this->input->post_get('form_level');
+        
+        if (!$student_id || !$form_level) {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Student ID and Form Level are required'
+                ]));
+            return;
+        }
+        
+        // Calculate grades based on form level
+        if ($form_level == 6) {
+            $result = $this->calculateALevelGrade($student_id);
+        } else {
+            $result = $this->calculateOLevelGrade($student_id, $form_level);
+        }
+        
+        // Return result as JSON
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($result));
+    }
+    
+    /**
+     * Generate report card view for a student
+     * 
+     * @param int $student_id The ID of the student
+     * @param int $form_level The form level
+     * @return void
+     */
+    public function generateReportCard($student_id, $form_level) {
+        // Get student information
+        $student_info = $this->Student_model->getStudentInfo($student_id);
+        
+        // Calculate grades
+        if ($form_level == 6) {
+            $grades = $this->calculateALevelGrade($student_id);
+        } else {
+            $grades = $this->calculateOLevelGrade($student_id, $form_level);
+        }
+        
+        // Prepare data for view
+        $data = [
+            'student_info' => $student_info,
+            'grades' => $grades,
+            'form_level' => $form_level
+        ];
+        
+        // Load view
+        $this->load->view('header');
+        $this->load->view('report_card', $data);
+        $this->load->view('footer');
+    }
+}
+
+
+
+ Student Grade Calculation Functions
+The grading logic is primarily implemented in view files that contain helper functions for grade calculation:
+application/views/student/studentShow.php
+Contains the findExamGrade() function (lines 3582-3593) that determines a student's grade based on percentage
+Includes findExamDivision() function (lines 3595-3606) for determining division/classification
+Has getCalculatedExamGradePoints() function (lines 3625-3659) that calculates grade points, quality points, and credit hours
+application/views/admin/examresult/_getExamGroupResult.php
+Contains the findGrade() function (lines 682-697) that matches percentage to grade name
+Includes findGradePoints() function (lines 699-712) that retrieves point value for a percentage
+Has arrange_code() and findExamPercentage() helper functions for exam result processing
+application/views/user/examresult/index.php
+Contains similar grading functions for the user/student view of exam results
+Includes getConsolidateRatio() function (lines 961-963) for calculating weighted grades
+2. Models for Grade Data
+The code references several models that likely handle the database operations for grades:
+grade_model - Referenced in Welcome.php (line 1341) to get grade details
+mark_model - Loaded in MY_Controller.php (line 19)
+examresult_model - Loaded in MY_Controller.php (lin       e 19)
+3. Controllers for Grade Processing
+Several controllers appear to handle grade-related operations:
+Welcome.php - Handles public exam result display
+Schsettings.php - Contains system settings for exams and grading
+
+
+CREATE TABLE `tz_exam_results` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `student_id` int(11) NOT NULL,
+  `exam_id` int(11) NOT NULL,
+  `form_level` int(11) NOT NULL COMMENT '2=Form 2, 4=Form 4, 6=Form 6',
+  `academic_year` varchar(20) DEFAULT NULL,
+  `total_points` int(11) DEFAULT NULL,
+  `division` varchar(5) DEFAULT NULL COMMENT 'I, II, III, IV, O',
+  `division_description` varchar(50) DEFAULT NULL COMMENT 'Excellent, Very Good, Good, Satisfactory, Fail',
+  `best_subjects_count` int(11) DEFAULT NULL COMMENT '7 for O-Level, 3 for A-Level',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `student_id` (`student_id`),
+  KEY `exam_id` (`exam_id`),
+  CONSTRAINT `tz_exam_results_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tz_exam_results_ibfk_2` FOREIGN KEY (`exam_id`) REFERENCES `exam_group_class_batch_exams` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+
+so i  created  a   table   
+
+
+
+exam_results - Likely stores individual student exam result
+
+exam_group_exam_results - Grouped exam results
+
+students - Main student information
+
+student_subjects - Links students to subjects
+
+users - Main user accounts
+
+user_roles - User role definitions
+
+sessions - Academic sessions/years
+classes - School classes
+
+sections - Class sections
+
+
+Sacas@Ditronics#
