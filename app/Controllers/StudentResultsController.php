@@ -4,31 +4,25 @@ namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\StudentModel;
-use App\Models\ExamGroupModel;
 use App\Models\ExamResultModel;
 use App\Models\ExamStudentModel;
 use App\Models\ExamSubjectModel;
-use App\Models\GradeModel;
 
 class StudentResultsController extends ResourceController
 {
     protected $studentModel;
-    protected $examGroupModel;
     protected $examResultModel;
     protected $examStudentModel;
     protected $examSubjectModel;
-    protected $gradeModel;
 
     public function __construct()
     {
         // Initialize models with try/catch to prevent fatal errors
         try {
             $this->studentModel = new StudentModel();
-            $this->examGroupModel = new ExamGroupModel();
             $this->examResultModel = new ExamResultModel();
             $this->examStudentModel = new ExamStudentModel();
             $this->examSubjectModel = new ExamSubjectModel();
-            $this->gradeModel = new GradeModel();
         } catch (\Exception $e) {
             // Log error but continue execution
             log_message('error', 'Error initializing models: ' . $e->getMessage());
@@ -76,7 +70,7 @@ class StudentResultsController extends ResourceController
         try {
             $student_id = $this->request->getPost('student_id');
             
-            $examgrouplist = $this->examGroupModel->getExamGroupByStudent($student_id);
+            $examgrouplist = $this->examStudentModel->getExamGroupByStudent($student_id);
             
             return $this->respond(['examgrouplist' => $examgrouplist]);
         } catch (\Exception $e) {
@@ -119,21 +113,21 @@ class StudentResultsController extends ResourceController
             $data = [];
             
             if (!empty($exam_group_exam_id)) {
-                $examresult = $this->examGroupModel->getExamResultDetailStudent($exam_group_exam_id, $exam_group_id, $student_id);
+                $examresult = $this->examResultModel->getExamResultDetailStudent($exam_group_exam_id, $exam_group_id, $student_id);
                 $data['examresult'] = $examresult;
-                $exam_grades = $this->gradeModel->getByExamType($examresult->exam_type);
+                $exam_grades = $this->examResultModel->getGradesByExamType($examresult->exam_type);
                 $data['exam_grades'] = $exam_grades;
-                $examresult = view('admin/examresult/_getExam', $data);
+                $examresult = view('student_results/_getExam', $data);
             } else {
-                $exam_group = $this->examGroupModel->get($exam_group_id);
+                $exam_group = $this->examResultModel->getExamGroup($exam_group_id);
                 $data['exam_group'] = $exam_group;
-                $exam_grades = $this->gradeModel->getByExamType($exam_group->exam_type);
+                $exam_grades = $this->examResultModel->getGradesByExamType($exam_group->exam_type);
                 $data['exam_grades'] = $exam_grades;
-                $exam_result = $this->examGroupModel->getExamGroupExamsResultByStudentID($exam_group_id, $student_id);
+                $exam_result = $this->examResultModel->getExamGroupExamsResultByStudentID($exam_group_id, $student_id);
                 $data['examresult'] = $exam_result;
-                $exam_connections = $this->examGroupModel->getExamGroupConnection($exam_group_id);
+                $exam_connections = $this->examResultModel->getExamGroupConnection($exam_group_id);
                 $data['exam_connections'] = $exam_connections;
-                $examresult = view('admin/examresult/_getExamGroupResult', $data);
+                $examresult = view('student_results/_getExamGroupResult', $data);
             }
             
             $data['exam_grades'] = $exam_grades;
@@ -174,15 +168,14 @@ class StudentResultsController extends ResourceController
         
         try {
             $student_session_id = $this->request->getPost('student_session_id');
-            $data['exam_grades'] = $this->gradeModel->get();
-            $exam_groups_attempt = $this->examGroupModel->getExamGroupByStudentSession($student_session_id);
+            $data['exam_grades'] = $this->examResultModel->getAllGrades();
+            $exam_groups_attempt = $this->examResultModel->getExamGroupByStudentSession($student_session_id);
             
             $data['exam_groups_attempt'] = $exam_groups_attempt;
-            $examresult = view('admin/examresult/_getExamGroupResult', $data);
+            $examresult = view('student_results/_getExamGroupResult', $data);
             
             return $this->respond([
                 'status' => 1, 
-                'error' => '', 
                 'result' => $examresult
             ]);
         } catch (\Exception $e) {
@@ -192,7 +185,7 @@ class StudentResultsController extends ResourceController
     }
 
     /**
-     * Generate marksheet for selected students
+     * Generate marksheet for students
      * 
      * @return mixed
      */
@@ -218,8 +211,8 @@ class StudentResultsController extends ResourceController
         try {
             $exam_id = $this->request->getPost('exam_id');
             $students = $this->request->getPost('check');
-            $exam = $this->examGroupModel->getExamByID($exam_id);
-            $exam_id = $exam->id;
+            
+            $exam = $this->examResultModel->getExamByID($exam_id);
             $students_result = [];
             
             if (!empty($students)) {
@@ -230,7 +223,7 @@ class StudentResultsController extends ResourceController
             
             return $this->respond([
                 'status' => 1, 
-                'students_result' => $students_result
+                'results' => $students_result
             ]);
         } catch (\Exception $e) {
             log_message('error', 'Error generating marksheet: ' . $e->getMessage());
@@ -259,7 +252,7 @@ class StudentResultsController extends ResourceController
             }
 
             // Fetch exam groups
-            $examGroups = $this->examGroupModel->getExamGroupsForStudent($studentId);
+            $examGroups = $this->examStudentModel->getExamGroupsForStudent($studentId);
             
             // Fetch exam results
             $examResults = $this->examResultModel->getExamResultsForStudent($studentId);
@@ -298,7 +291,7 @@ class StudentResultsController extends ResourceController
             if ($studentId) {
                 // If current user is a student, show their results
                 $data['student'] = $this->studentModel->getStudentWithClass($studentId);
-                $data['exam_groups'] = $this->examGroupModel->getExamGroupsForStudent($studentId);
+                $data['exam_groups'] = $this->examStudentModel->getExamGroupsForStudent($studentId);
                 $data['exam_results'] = $this->examResultModel->getExamResultsForStudent($studentId);
             } else {
                 // If current user is not a student (teacher/admin), show search form
