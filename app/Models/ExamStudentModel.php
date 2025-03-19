@@ -19,16 +19,33 @@ class ExamStudentModel extends Model
         'roll_no'
     ];
 
-    protected $current_session;
+    // Remove SettingModel dependency and use a default session
+    protected $current_session = 1;
 
     public function __construct()
     {
         parent::__construct();
-        // Get the current session from settings
-        $settingModel = new \App\Models\SettingModel();
-        $this->current_session = $settingModel->getCurrentSession();
+        // Remove SettingModel usage
+    }
+
+    // Fix the insert method to match parent class signature
+    public function insert($data = null, bool $returnID = true)
+    {
+        if (empty($data)) {
+            return false;
+        }
+
+        $db = \Config\Database::connect('second_db');
+        $builder = $db->table($this->table);
         
-        $this->DBGroup = 'second_db';
+        $builder->where('exam_group_class_batch_exam_id', $data['exam_group_class_batch_exam_id']);
+        $builder->where('student_session_id', $data['student_session_id']);
+        $query = $builder->get();
+        
+        if ($query->getNumRows() == 0) {
+            return parent::insert($data, $returnID);
+        }
+        return true;
     }
 
     public function searchExamStudents($class_id, $section_id, $exam_id)
@@ -119,21 +136,6 @@ class ExamStudentModel extends Model
         $builder->whereIn('student_id', $check_alreay_inserted_students);
         $query = $builder->get();
         return $query->getResult();
-    }
-
-    public function insert($insert_value)
-    {
-        $db = \Config\Database::connect('second_db');
-        
-        $builder = $db->table('exam_group_class_batch_exam_students');
-        $builder->where('exam_group_class_batch_exam_id', $insert_value['exam_group_class_batch_exam_id']);
-        $builder->where('student_session_id', $insert_value['student_session_id']);
-        $query = $builder->get();
-        
-        if ($query->getNumRows() == 0) {
-            $builder->insert($insert_value);
-        }
-        return true;
     }
 
     public function getBatchStudentDetail($exam_group_class_batch_exam_student_id)

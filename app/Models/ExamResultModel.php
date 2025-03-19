@@ -23,14 +23,13 @@ class ExamResultModel extends Model
         'updated_at'
     ];
 
-    protected $current_session;
+    // Remove SettingModel dependency and use a default session
+    protected $current_session = 1;
 
     public function __construct()
     {
         parent::__construct();
-        // Get the current session from settings
-        $settingModel = new \App\Models\SettingModel();
-        $this->current_session = $settingModel->getCurrentSession();
+        // Remove SettingModel usage
     }
 
     /**
