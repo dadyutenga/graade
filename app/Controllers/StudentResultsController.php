@@ -284,19 +284,10 @@ class StudentResultsController extends ResourceController
             $data = [];
             $data['title'] = 'Student Exam Results';
             
-            // Get current user's student ID if applicable
-            $userId = auth()->id();
-            $studentId = $this->studentModel->getStudentIdByUserId($userId);
-            
-            if ($studentId) {
-                // If current user is a student, show their results
-                $data['student'] = $this->studentModel->getStudentWithClass($studentId);
-                $data['exam_groups'] = $this->examStudentModel->getExamGroupsForStudent($studentId);
-                $data['exam_results'] = $this->examResultModel->getExamResultsForStudent($studentId);
-            } else {
-                // If current user is not a student (teacher/admin), show search form
-                $data['students'] = $this->studentModel->findAll();
-            }
+            // Remove the student ID lookup and just show the search form
+            // Get classes for the dropdown (if needed)
+            $data['classes'] = []; // You can populate this if needed
+            $data['sessions'] = []; // You can populate this if needed
             
             return view('student_results/index', $data);
         } catch (\Exception $e) {
