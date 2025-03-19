@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class ExamStudentModel extends Model
 {
-    protected $DBGroup = 'default';  // We'll change this to your second DB
+    protected $DBGroup = 'second_db';
     protected $table = 'exam_group_class_batch_exam_students';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
@@ -28,13 +28,12 @@ class ExamStudentModel extends Model
         $settingModel = new \App\Models\SettingModel();
         $this->current_session = $settingModel->getCurrentSession();
         
-        // Set the database group to the second database
-        $this->DBGroup = 'seconddb';
+        $this->DBGroup = 'second_db';
     }
 
     public function searchExamStudents($class_id, $section_id, $exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('students');
         $builder->select('classes.id AS `class_id`, student_session.id as student_session_id, students.id, classes.class, sections.id AS `section_id`, sections.section, students.id, students.admission_no, students.roll_no, students.admission_date, students.firstname, students.middlename, students.lastname, students.image, students.mobileno, students.email, students.state, students.city, students.pincode, students.religion, students.dob, students.current_address, students.permanent_address, IFNULL(students.category_id, 0) as `category_id`, IFNULL(categories.category, "") as `category`, students.adhar_no, students.samagra_id, students.bank_account_no, students.bank_name, students.ifsc_code, students.guardian_name, students.guardian_relation, students.guardian_phone, students.guardian_address, students.is_active, students.created_at, students.updated_at, students.father_name, students.rte, students.gender, IFNULL(exam_group_class_batch_exam_students.id, 0) as onlineexam_student_id, IFNULL(exam_group_class_batch_exam_students.student_session_id, 0) as onlineexam_student_session_id');
@@ -57,7 +56,7 @@ class ExamStudentModel extends Model
 
     public function add_exam_result($data)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_results');
         $builder->where('exam_schedule_id', $data['exam_schedule_id']);
@@ -80,7 +79,7 @@ class ExamStudentModel extends Model
 
     public function add_student($insert_array, $exam_group_class_batch_exam_id, $all_students)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         $delete_array = array();
         $inserted_array = array();
         
@@ -113,7 +112,7 @@ class ExamStudentModel extends Model
 
     public function checkStudentExists($check_alreay_inserted_students, $exam_group_class_batch_exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_group_class_batch_exam_students');
         $builder->where('exam_group_class_batch_exam_id', $exam_group_class_batch_exam_id);
@@ -124,7 +123,7 @@ class ExamStudentModel extends Model
 
     public function insert($insert_value)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_group_class_batch_exam_students');
         $builder->where('exam_group_class_batch_exam_id', $insert_value['exam_group_class_batch_exam_id']);
@@ -139,7 +138,7 @@ class ExamStudentModel extends Model
 
     public function getBatchStudentDetail($exam_group_class_batch_exam_student_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT exam_group_class_batch_exam_students.*,sessions.session, exam_group_class_batch_exams.exam,exam_group_class_batch_exams.session_id, students.admission_no, students.id as `student_id`, students.roll_no,students.admission_date,students.firstname,students.middlename, students.lastname,students.image, students.mobileno, students.email ,students.state, students.city, students.pincode, students.religion,students.dob, students.current_address, students.permanent_address,students.category_id, IFNULL(categories.category, '') as `category`, students.adhar_no,students.samagra_id,students.bank_account_no,students.bank_name, students.ifsc_code, students.guardian_name, students.guardian_relation,students.guardian_phone,students.guardian_address,students.is_active,`students`.`father_name`,`students`.`gender` FROM `exam_group_class_batch_exam_students` INNER join students on students.id=exam_group_class_batch_exam_students.student_id INNER JOIN exam_group_class_batch_exams on exam_group_class_batch_exams.id=exam_group_class_batch_exam_students.exam_group_class_batch_exam_id LEFT JOIN `categories` ON `students`.`category_id` = `categories`.`id` INNER JOIN sessions on sessions.id=exam_group_class_batch_exams.session_id WHERE exam_group_class_batch_exam_students.id=" . $db->escape($exam_group_class_batch_exam_student_id);
         
@@ -149,7 +148,7 @@ class ExamStudentModel extends Model
 
     public function getStudentByExamAndStudentID($student_id, $exam_group_class_batch_exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_group_class_batch_exam_students');
         $builder->where('student_id', $student_id);
@@ -164,7 +163,7 @@ class ExamStudentModel extends Model
 
     public function getStudentsAdmitCardByExamAndStudentID($students_array, $exam_group_class_batch_exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT * FROM `exam_group_class_batch_exam_students` where exam_group_class_batch_exam_id=" . $exam_group_class_batch_exam_id . " and (roll_no IS NULL OR roll_no = 0)";
         $query = $db->query($sql);
@@ -200,7 +199,7 @@ class ExamStudentModel extends Model
 
     public function getStudentDetailsByExamAndStudentID($student_id, $exam_group_class_batch_exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT exam_group_class_batch_exam_students.*,students.admission_no, students.id as `student_id`,students.admission_date,students.roll_no as `profile_roll_no`, students.firstname,students.middlename, students.lastname,students.image, students.mobileno, students.email ,students.state, students.city, students.pincode, students.religion,students.dob, students.current_address, students.permanent_address,students.category_id, IFNULL(categories.category, '') as `category`, students.adhar_no,students.samagra_id,students.bank_account_no,students.bank_name, students.ifsc_code, students.guardian_name, students.guardian_relation,students.guardian_phone,students.guardian_address,students.is_active,`students`.`father_name`,`students`.`mother_name`,`students`.`gender`,classes.class,sections.section FROM `exam_group_class_batch_exam_students` INNER JOIN student_session on student_session.id=exam_group_class_batch_exam_students.student_session_id INNER JOIN students on students.id=student_session.student_id LEFT JOIN `categories` ON `students`.`category_id` = `categories`.`id` INNER JOIN classes on classes.id=student_session.class_id INNER JOIN sections on sections.id=student_session.section_id WHERE `exam_group_class_batch_exam_students`.`student_id` = " . $db->escape($student_id) . " AND `exam_group_class_batch_exam_students`.`exam_group_class_batch_exam_id` = " . $db->escape($exam_group_class_batch_exam_id);
         
@@ -210,7 +209,7 @@ class ExamStudentModel extends Model
 
     public function getStudentdetailByExam($student_id, $exam_group_class_batch_exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT exam_group_class_batch_exam_students.*,students.admission_no, students.roll_no,students.id as `student_id`,students.admission_date,students.firstname,students.middlename, students.lastname,students.image, students.mobileno, students.email ,students.state, students.city, students.pincode, students.religion,students.dob, students.current_address, students.permanent_address,students.category_id, IFNULL(categories.category, '') as `category`, students.adhar_no,students.samagra_id,students.bank_account_no,students.bank_name, students.ifsc_code, students.guardian_name, students.guardian_relation,students.guardian_phone,students.guardian_address,students.is_active,`students`.`father_name`,`students`.`mother_name`,`students`.`gender`,student_session.class_id,student_session.section_id,classes.class,sections.section FROM `exam_group_class_batch_exam_students` INNER JOIN student_session on student_session.id=exam_group_class_batch_exam_students.student_session_id INNER JOIN students on students.id=student_session.student_id LEFT JOIN `categories` ON `students`.`category_id` = `categories`.`id` INNER JOIN classes on classes.id=student_session.class_id INNER JOIN sections on sections.id=student_session.section_id WHERE `exam_group_class_batch_exam_students`.`student_id` = " . $db->escape($student_id) . " AND `exam_group_class_batch_exam_students`.`exam_group_class_batch_exam_id` = " . $db->escape($exam_group_class_batch_exam_id);
         
@@ -220,7 +219,7 @@ class ExamStudentModel extends Model
 
     public function getExamStudentByID($exam_group_class_batch_exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT exam_group_class_batch_exam_students.*,students.admission_no, students.roll_no as `student_roll_no`,students.id as `student_id`,students.admission_date,students.firstname,students.middlename, students.lastname,students.image, students.mobileno, students.email ,students.state, students.city, students.pincode, students.religion,students.dob, students.current_address, students.permanent_address,students.category_id, IFNULL(categories.category, '') as `category`, students.adhar_no,students.samagra_id,students.bank_account_no,students.bank_name, students.ifsc_code, students.guardian_name, students.guardian_relation,students.guardian_phone,students.guardian_address,students.is_active,`students`.`father_name`,`students`.`mother_name`,`students`.`gender`,student_session.class_id,student_session.section_id,classes.class,sections.section FROM `exam_group_class_batch_exam_students` INNER JOIN student_session on student_session.id=exam_group_class_batch_exam_students.student_session_id INNER JOIN students on students.id=student_session.student_id LEFT JOIN `categories` ON `students`.`category_id` = `categories`.`id` INNER JOIN classes on classes.id=student_session.class_id INNER JOIN sections on sections.id=student_session.section_id WHERE `exam_group_class_batch_exam_students`.`id` = " . $db->escape($exam_group_class_batch_exam_id);
         
@@ -230,7 +229,7 @@ class ExamStudentModel extends Model
 
     public function getstudentexam($admission_no)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_group_class_batch_exam_students');
         $builder->select('exam_group_class_batch_exams.exam, exam_group_class_batch_exams.passing_percentage, exam_group_class_batch_exams.id, exam_group_class_batch_exam_students.student_session_id, students.firstname, students.middlename, students.lastname, students.roll_no, students.admission_no, classes.class as class_name, sections.section as section_name');
@@ -248,7 +247,7 @@ class ExamStudentModel extends Model
     
     public function getstudentsessionidbyadmissionno($admission_no)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('student_session');
         $builder->select('student_session.id');

@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class ExamSubjectModel extends Model
 {
-    protected $DBGroup = 'seconddb';
+    protected $DBGroup = 'second_db';
     protected $table = 'exam_group_class_batch_exam_subjects';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
@@ -31,7 +31,7 @@ class ExamSubjectModel extends Model
 
     public function add($insert_array, $update_array, $not_be_del, $exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         if (!empty($insert_array)) {
             foreach ($insert_array as $insert_key => $insert_value) {
@@ -58,7 +58,7 @@ class ExamSubjectModel extends Model
     
     public function getExamSubjects($exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_group_class_batch_exam_subjects');
         $builder->select('exam_group_class_batch_exam_subjects.*, subjects.name, subjects.code');
@@ -72,7 +72,7 @@ class ExamSubjectModel extends Model
     
     public function getSubjectByExamSubjectId($exam_subject_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_group_class_batch_exam_subjects');
         $builder->select('exam_group_class_batch_exam_subjects.*, subjects.name, subjects.code');
@@ -85,7 +85,7 @@ class ExamSubjectModel extends Model
     
     public function getExamSubjectsByExamId($exam_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $builder = $db->table('exam_group_class_batch_exam_subjects');
         $builder->where('exam_group_class_batch_exams_id', $exam_id);

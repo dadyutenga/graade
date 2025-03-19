@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class ExamResultModel extends Model
 {
-    protected $DBGroup = 'seconddb';
+    protected $DBGroup = 'second_db';
     protected $table = 'exam_results';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
@@ -39,7 +39,7 @@ class ExamResultModel extends Model
      */
     public function remove($id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         $builder = $db->table('exam_results');
         $builder->where('id', $id);
         $builder->delete();
@@ -53,7 +53,7 @@ class ExamResultModel extends Model
      */
     public function add($data)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         $builder = $db->table('exam_results');
         
         if (isset($data['id'])) {
@@ -67,7 +67,7 @@ class ExamResultModel extends Model
 
     public function add_exam_result($data)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         $builder = $db->table('exam_results');
         
         $builder->where('exam_schedule_id', $data['exam_schedule_id']);
@@ -90,7 +90,7 @@ class ExamResultModel extends Model
 
     public function get_exam_result($exam_schedule_id = null, $student_id = null)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         $builder = $db->table('exam_results');
         
         $builder->where('exam_schedule_id', $exam_schedule_id);
@@ -109,7 +109,7 @@ class ExamResultModel extends Model
 
     public function get_result($exam_schedule_id = null, $student_id = null)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         $builder = $db->table('exam_results');
         
         $builder->where('exam_schedule_id', $exam_schedule_id);
@@ -124,7 +124,7 @@ class ExamResultModel extends Model
 
     public function checkexamresultpreparebyexam($exam_id, $class_id, $section_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT count(*) `counter` FROM `exam_results`,exam_schedules,student_session 
                 WHERE exam_results.exam_schedule_id=exam_schedules.id 
@@ -142,7 +142,7 @@ class ExamResultModel extends Model
 
     public function getStudentExamResultByStudent($exam_id, $student_id, $exam_schedule)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT exam_schedules.id as `exam_schedules_id`,
                 exam_results.id as `exam_results_id`,
@@ -235,7 +235,7 @@ class ExamResultModel extends Model
 
     public function updaterank($update_array, $exam_group_class_batch_exam_id)
     {     
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         if (!empty($update_array)) {
             $data_update = array('is_rank_generated' => 1);   
@@ -251,7 +251,7 @@ class ExamResultModel extends Model
 
     public function getStudentResultByExam($exam_id, $student_id)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         
         $sql = "SELECT exam_group_class_batch_exam_subjects.*,
                 exam_group_exam_results.id as `exam_group_exam_results_id`,
@@ -334,7 +334,7 @@ class ExamResultModel extends Model
      */
     public function get($id = null)
     {
-        $db = \Config\Database::connect('seconddb');
+        $db = \Config\Database::connect('second_db');
         $builder = $db->table('exam_results');
         
         if ($id != null) {
